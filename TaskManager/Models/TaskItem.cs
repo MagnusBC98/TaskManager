@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 using TaskManager.Enums;
 
 namespace TaskManager.Models
 {
-    public class ToDoTask
+    public class TaskItem
     {
         public int Id { get; set; }
 
@@ -15,5 +16,9 @@ namespace TaskManager.Models
         public DateTime DueDate { get; set; }
 
         public TaskState Status { get; set; }
+
+        public string? UserId { get; set; }
+
+        public IdentityUser? User { get; set; }
     }
 }

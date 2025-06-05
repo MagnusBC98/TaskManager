@@ -10,6 +10,17 @@ namespace TaskManager.Data
             : base(options)
         {
         }
-        public DbSet<TaskManager.Models.ToDoTask> Task { get; set; } = default!;
+        public DbSet<TaskItem> Task { get; set; } = default!;
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<TaskItem>()
+                .HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
     }
 }

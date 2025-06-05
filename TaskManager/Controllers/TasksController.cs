@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,19 +9,24 @@ using TaskManager.Models;
 
 namespace TaskManager.Controllers
 {
+    [Authorize]
     public class TasksController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public TasksController(ApplicationDbContext context)
+        public TasksController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Tasks
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Task.ToListAsync());
+            var userId = _userManager.GetUserId(User);
+            var tasks = _context.Task.Where(t => t.UserId == userId);
+            return View(await tasks.ToListAsync());
         }
 
         // GET: Tasks/Details/5
@@ -56,8 +59,10 @@ namespace TaskManager.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,DueDate,Status")] ToDoTask task)
+        public async Task<IActionResult> Create([Bind("Id,Title,Description,DueDate,Status")] TaskItem task)
         {
+            var userId = _userManager.GetUserId(User);
+            task.UserId = userId;
             if (ModelState.IsValid)
             {
                 _context.Add(task);
@@ -89,7 +94,7 @@ namespace TaskManager.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,DueDate,Status")] ToDoTask task)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,DueDate,Status")] TaskItem task)
         {
             if (id != task.Id)
             {
